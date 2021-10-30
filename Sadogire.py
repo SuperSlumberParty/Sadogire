@@ -5,16 +5,18 @@ from discord.ext.commands import Bot, has_permissions, CheckFailure
 from Config import *
 
 import zmq
+import zmq.asyncio
 import json
 
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) # Error supression
 
 # Server block start
 async def Init():
-    sock = zmq.Context().socket(zmq.REP)
+    sock = zmq.asyncio.Context().socket(zmq.REP)
     sock.bind(f"tcp://*:{INPORT}")
     while True:
-        reply = await Process(json.loads(sock.recv_string()))
-        sock.send_string(reply)
+        reply = await Process(json.loads(await sock.recv_string()))
+        await sock.send_string(reply)
 
 async def Process(message):
     if (type(message) == list):
