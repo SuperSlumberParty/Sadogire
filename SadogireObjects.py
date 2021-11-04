@@ -1,6 +1,3 @@
-from _typeshed import IdentityFunction
-
-
 class RequestObject:
     MessageType=None
     # 0 - Ping, Content should be None

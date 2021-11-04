@@ -2,7 +2,6 @@
 #\x53\x55\x50\x45\x52
 #\x53\x4c\x55\x4d\x42\x45\x52
 #\x50\x41\x52\x54\x59
-from typing import Type
 import warnings
 import asyncio
 
@@ -11,42 +10,73 @@ from discord.ext import commands
 from discord.ext.commands import Bot, has_permissions, CheckFailure
 
 from Config import *
+from SadogireObjects import *
 
 import zmq # Communication via tcp
 import zmq.asyncio
 
 import json # Message enconding
+
+# Cryptography
 import cryptography
 from cryptography.fernet import Fernet
+from cryptography.hazmat.backends import _get_backend, default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+
+import base64
+
+import pickle, zlib
 
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) # Error supression for zmq
 
 # Server block start
-async def Init():
+async def Init(flags=0, protocol=-1):
     sock = zmq.asyncio.Context().socket(zmq.REP)
     sock.setsockopt(zmq.SNDTIMEO, TIMEOUT)
     sock.bind(f"tcp://*:{INPORT}")
     while True:
-        Request = Decrypt(json.loads(await sock.recv_string())) # Waits until a request is made, then attempts to decrypt it
-        reply = await Authorize(Request)
-        if (reply == False): # If auth has failed - Reply with nothing
+        Request = await Unscramble(await sock.recv())
+        print(type(Request))
+        print(Request)
+        reply = await DetermineObject(Request)
+        if (reply == "Unknown"): # If Unknown - Deny
             await sock.send_string("You're delusional")
         else:
-            await sock.send_string(Request)
+            await sock.send_string(reply)
+
 
 async def Respond(Request):
     pass;
     
+async def DetermineObject(message):
+    if (type(message) == RequestObject): # Checks for Request Object
+        return "Request"
+    elif (type(message) == NodeIdentity): # Deny auth if it's not a list
+        return "NodeIdentity"
+    else:
+        return "Unknown"
 
-async def Authorize(message):
-    if (type(message) == list): # Expects a list type
-        if (message[0] != SECRET): # If first variable does not match the SECRET key - respond with wrong key
-            await ActionLog("Wrong key inputted.") # Alert owner of a wrong key
-            return True
-        # ELSE: Deny auth
-        return False
-    else: # Deny auth if it's not a list
-        return False
+async def Unscramble(REQ):
+    #        unpickles a decompressed Decrypted Object
+    return pickle.loads(zlib.decompress(await Decrypt(REQ)))
+
+async def GetEncKey():
+    # Generate a SHA256 hash with a length of 32
+    hkdf = HKDF(algorithm=hashes.SHA256(), length=32, 
+                salt=None, info=None, backend=default_backend())
+    #                      B64 Encode a derived hash with SECRET
+    EncKey = base64.urlsafe_b64encode(hkdf.derive(SECRET.encode()))
+    return EncKey
+
+async def Decrypt(Object):
+    try: # Attempt to decrypt object
+        Key = Fernet(await GetEncKey()) # Generate key
+        DecryptedObj=Key.decrypt(Object) # Decrypt with said key
+        return DecryptedObj # If no exceptions happen - return DecryptedObj
+    except (cryptography.fernet.InvalidToken, TypeError): # If InvalidToken
+        await ActionLog("Invalid SECRET given!") # Log error
+        return "Invalid Request" # Return Invalid Request error to server function
 
 # Server block end
 
@@ -80,19 +110,10 @@ def CheckConfig():
         warnings.warn("LOGCHANNEL is not set! You will not receive log information via discord!")
     if (SECRET == "TwinklingStar"): # If the secret is default - warn the user
         warnings.warn("You are running Sadogire with the default secret! This is unsecure and may grant access to any third party!")
-    if (TIMEOUT < 3000): # If timeout is over 3 seconds - issue a warning
+    if (TIMEOUT > 3000): # If timeout is over 3 seconds - issue a warning
         warnings.warn("Timeout is too high! This may cause sadogire to malfunction!")
 
-# Decryption block
 
-async def Decrypt(Object):
-    try: # Attempt to decrypt object
-        EncKey = Fernet(SECRET) # Generate key
-        DecryptedObj=EncKey.decrypt(Object) # Decrypt with said key
-        return DecryptedObj # If no exceptions happen - return DecryptedObj
-    except (cryptography.fernet.InvalidToken, TypeError): # If InvalidToken
-        await ActionLog("Invalid SECRET inputted!") # Log error
-        return "Invalid Request" # Return Invalid Request error to server function
 
 # Monkeypatch, monkeypatch
 def warnformat(msg, *args, **kwargs):
