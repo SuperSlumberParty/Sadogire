@@ -31,7 +31,7 @@ import pickle, zlib
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) # Error supression for zmq
 
 # Server block start
-async def Init(flags=0, protocol=-1):
+async def Init():
     sock = zmq.asyncio.Context().socket(zmq.REP)
     sock.setsockopt(zmq.SNDTIMEO, TIMEOUT)
     sock.bind(f"tcp://*:{INPORT}")
@@ -40,30 +40,32 @@ async def Init(flags=0, protocol=-1):
         print(type(Request))
         print(Request)
         reply = await DetermineObject(Request)
-        if (reply == "Unknown"): # If Unknown - Deny
+        if (reply == 0): # If Unknown - Deny
             await sock.send_string("You're delusional")
         else:
-            await sock.send_string(reply)
+            await sock.send(reply)
 
 
-async def Respond(Request):
+async def Respond(SadogireObject, type):
     pass;
     
 async def DetermineObject(message):
     if (type(message) == RequestObject): # Checks for Request Object
-        return "Request"
+        return 1
     elif (type(message) == NodeIdentity): # Deny auth if it's not a list
-        return "NodeIdentity"
+        return 2
     else:
-        return "Unknown"
+        return 0
+# Server block end
 
+# --- Encryption block start ---
 async def Unscramble(REQ):
     #        unpickles a decompressed Decrypted Object
     return pickle.loads(zlib.decompress(await Decrypt(REQ)))
 
 async def GetEncKey():
-    # Generate a SHA256 hash with a length of 32
-    hkdf = HKDF(algorithm=hashes.SHA256(), length=32, 
+    # Generate a BLAKE2b hash with a length of 32
+    hkdf = HKDF(algorithm=hashes.BLAKE2b(64), length=32, 
                 salt=None, info=None, backend=default_backend())
     #                      B64 Encode a derived hash with SECRET
     EncKey = base64.urlsafe_b64encode(hkdf.derive(SECRET.encode()))
@@ -77,9 +79,7 @@ async def Decrypt(Object):
     except (cryptography.fernet.InvalidToken, TypeError): # If InvalidToken
         await ActionLog("Invalid SECRET given!") # Log error
         return "Invalid Request" # Return Invalid Request error to server function
-
-# Server block end
-
+# --- Encryption block end ---
 
 # Bot preconfiguration
 Triton=commands.Bot(command_prefix="<")
@@ -103,7 +103,8 @@ def CheckConfig():
     if (TOKEN == ""): # If the token is empty - Assume Config.py was untouched
         raise ValueError("You have not configured the config file!\nPlease edit config.py with the required variables!")
     if (INPORT > 65535 or INPORT < 0): # If RFC 793 is violated - raise an error and explain why
-        raise ValueError("Port value is incorrect! You are allowed to have a port number ranging from 1 to 65535 due to TCP header limitations! Negative numbers, 0, or anything over 65535 will not work!")
+        raise ValueError("Port value is incorrect! You are allowed to have a port number ranging from 1 to 65535 due to TCP header limitations!\
+                          Negative numbers, 0, or anything over 65535 will not work!")
     if (OWNERID == 0): # If Owner is not specified - warn the user
         warnings.warn("OWNERID is not set! Sadogire cannot be used to its full extent without an owner!")
     if (LOGCHANNEL == 0): # If logchannel is not set - warn the user
