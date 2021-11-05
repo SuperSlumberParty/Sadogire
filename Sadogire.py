@@ -39,38 +39,36 @@ async def Init():
         Request = await Unscramble(await sock.recv())
         print(type(Request))
         print(Request)
-        reply = await DetermineObject(Request)
-        if (reply == 0): # If Unknown - Deny
-            await sock.send_string("You're delusional")
+        isSadoObject = await DetermineObject(Request)
+        if (isSadoObject == False): # If Unknown - Deny
+            await sock.send(b"You're delusional")
         else:
-            await sock.send(reply)
+            Response = Respond(Request)
+            
 
 
-async def Respond(SadogireObject, type):
+async def Respond(SadogireObject):
     pass;
     
 async def DetermineObject(message):
-    if (type(message) == RequestObject): # Checks for Request Object
-        return 1
-    elif (type(message) == NodeIdentity): # Deny auth if it's not a list
-        return 2
+    if (type(message) == RequestObject or type(message) == NodeIdentity): # Checks for Request Object
+        return True
     else:
-        return 0
-# Server block end
+        return False
 
 # --- Encryption block start ---
+
+# Encrypts a message to be replied
+async def Encrypt(REP):
+    Key = Fernet(await GetEncKey())
+    return Key.encrypt(zlib.compress(pickle.dumps(REP)))
+
+# Unpacks a pickled compressed object into a readable SadogireObject
 async def Unscramble(REQ):
     #        unpickles a decompressed Decrypted Object
     return pickle.loads(zlib.decompress(await Decrypt(REQ)))
 
-async def GetEncKey():
-    # Generate a BLAKE2b hash with a length of 32
-    hkdf = HKDF(algorithm=hashes.BLAKE2b(64), length=32, 
-                salt=None, info=None, backend=default_backend())
-    #                      B64 Encode a derived hash with SECRET
-    EncKey = base64.urlsafe_b64encode(hkdf.derive(SECRET.encode()))
-    return EncKey
-
+# Decrypts the message
 async def Decrypt(Object):
     try: # Attempt to decrypt object
         Key = Fernet(await GetEncKey()) # Generate key
@@ -79,6 +77,16 @@ async def Decrypt(Object):
     except (cryptography.fernet.InvalidToken, TypeError): # If InvalidToken
         await ActionLog("Invalid SECRET given!") # Log error
         return "Invalid Request" # Return Invalid Request error to server function
+
+# Retrieves an Encryption Key for Fernet
+async def GetEncKey():
+    # Generate a BLAKE2b hash with a length of 32
+    hkdf = HKDF(algorithm=hashes.BLAKE2b(64), length=32, 
+                salt=None, info=None, backend=default_backend())
+    #                      B64 Encode a derived hash with SECRET
+    EncKey = base64.urlsafe_b64encode(hkdf.derive(SECRET.encode()))
+    return EncKey
+
 # --- Encryption block end ---
 
 # Bot preconfiguration
