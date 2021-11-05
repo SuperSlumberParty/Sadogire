@@ -9,7 +9,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Bot, has_permissions, CheckFailure
 
-from Variables import Config
+from Variables import Config, Lists
 from SadogireObjects import *
 
 import zmq # Communication via tcp
@@ -17,7 +17,7 @@ import zmq.asyncio
 
 import json # Message enconding
 
-from Utility import Encryption
+from Utility import Encryption, FirstLaunch
 
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) # Error supression for zmq
 
@@ -47,7 +47,7 @@ async def DetermineObject(message):
         return False
 
 # Bot preconfiguration
-Triton=commands.Bot(command_prefix="<")
+Triton=commands.Bot(command_prefix="<", case_insensitive=True)
 
 # This function sends a message to a specified logchannel in the config
 async def ActionLog(message):
@@ -90,6 +90,7 @@ def warnformat(msg, *args, **kwargs):
 
 def Boot():
     warnings.formatwarning = warnformat
+    FirstLaunch.Setup()
     CheckConfig()
     Triton.run(Config.TOKEN)
 
