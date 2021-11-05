@@ -1,9 +1,9 @@
-class RequestObject:
+class Request:
     MessageType=None
     # 0 - Ping, Content should be None
     # 1 - Node message, Content states 
     # 2 - WhoAmI, assigns ID number, Content states what server and channel it's relaying from
-    # 3 - WhereAmI,
+    # 3 - WhereAmI, Contains either guild or channel info
     Content=None
 
     def GetType(self):
@@ -18,7 +18,21 @@ class NodeIdentity:
     ChannelName=None
     GuildName=None
 
-    def __init__(self, ID, ChannelName, GuildName):
-        self.Identity=ID
+    def __init__(self, Id, ChannelName, GuildName):
+        self.Identity=Id
         self.ChannelName=ChannelName
         self.GuildName=GuildName
+
+class Reconfiguration:
+    Identity=None
+    ChannelID=None
+    GuildID=None
+    GuildMode=None
+    WebhookURL=None
+
+    def __init__(self, Id, CId, GId, GMode, WHUrl):
+        self.Identity=Id
+        self.ChannelID=CId
+        self.GuildID=GId
+        self.GuildMode=GMode
+        self.WebhookURL=WHUrl
