@@ -1,5 +1,6 @@
-import zmq, zlib, pickle, base64 # Client
-from SadogireObjects import RequestObject
+import zmq, zlib, pickle, base64
+
+from SadogireObjects import Request
 from Config import SECRET, INPORT
 
 # Cryptography
@@ -10,7 +11,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
 # Filler RequestObject object
-ObjObj=RequestObject(0,"Misfortune") 
+ObjObj=Request(0,"Misfortune") 
 
 # Generate a simple HKDF object using BLAKE2b hashing
 hkdf = HKDF(algorithm=hashes.BLAKE2b(64), length=32, 
