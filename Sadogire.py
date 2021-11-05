@@ -9,15 +9,16 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Bot, has_permissions, CheckFailure
 
+
 from Variables import Config, Lists
 from SadogireObjects import *
+from Utility import Encryption, FileOperations, SadogirePermissions
 
 import zmq # Communication via tcp
 import zmq.asyncio
 
 import json # Message enconding
 
-from Utility import Encryption, FirstLaunch
 
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) # Error supression for zmq
 
@@ -63,6 +64,26 @@ async def on_ready():
     asyncio.get_event_loop().create_task(Init())
     await ActionLog("Sadogire instance is running. Awaiting nodes")
 
+@Triton.command(name='query')
+async def QueryUser(ctx, userid=None):
+    if (userid==None):
+        userid = ctx.author.id
+        PermissionLevel=await SadogirePermissions.PermissionsCheck(userid)
+        if (PermissionLevel == False):
+            await ctx.channel.send("This user is not approved")
+        elif (PermissionLevel == 0):
+            await ctx.channel.send("This user's permissions have been revoked.")
+        else:
+            await ctx.channel.send(f"This user is approved and has {PermissionLevel} Permission Level")
+    else:
+        await ctx.channel.send("You are not approved to use this command.")
+
+
+
+
+
+
+
 # Config checks before initialization 
 def CheckConfig():
     if (Config.TOKEN == ""): # If the token is empty - Assume Config.py was untouched
@@ -90,7 +111,7 @@ def warnformat(msg, *args, **kwargs):
 
 def Boot():
     warnings.formatwarning = warnformat
-    FirstLaunch.Setup()
+    FileOperations.Setup()
     CheckConfig()
     Triton.run(Config.TOKEN)
 

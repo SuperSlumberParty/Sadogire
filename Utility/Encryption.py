@@ -10,8 +10,8 @@ import base64
 import pickle, zlib
 
 # Encrypts a message to be replied
-async def Encrypt(REP):
-    Key = Fernet(await GetEncKey())
+async def Scramble(REP, SECRET):
+    Key = Fernet(await GetEncKey(SECRET))
     return Key.encrypt(zlib.compress(pickle.dumps(REP)))
 
 # Unpacks a pickled compressed object into a readable SadogireObject

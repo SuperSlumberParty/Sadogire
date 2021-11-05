@@ -38,8 +38,8 @@ class Reconfiguration:
         self.WebhookURL=WHUrl
 
 class UserPermissions:
-    __PermissionLevel=None
-    __Revoked=False
+    PermissionLevel=None
+    Revoked=False
 
     def __init__(self, PermissionsLevel=0, Revoked=False):
         self.PermissionLevel=PermissionsLevel
