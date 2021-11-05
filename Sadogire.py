@@ -60,31 +60,32 @@ async def ActionLog(message):
 # Init event - starts when the bot is being booted up
 @Triton.event
 async def on_ready():
-    print("Sadogire is running!")
     asyncio.get_event_loop().create_task(Init())
-    await ActionLog("Sadogire instance is running. Awaiting nodes")
+    await Load()
+    print("Sadogire is running!")
+    #await ActionLog("Sadogire instance is running. Awaiting nodes")
 
 @Triton.command(name='query')
 async def QueryUser(ctx, userid=None):
     if (userid==None):
         userid = ctx.author.id
-    if (await SadogirePermissions.PermissionsCheck(ctx.author.id == 0)):
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == False):
         await ctx.channel.send("You are not approved to use this command.")
-    PermissionLevel=await SadogirePermissions.PermissionsCheck(int(userid))
+    PermissionLevel=await SadogirePermissions.PermissionsCheck(int(userid), Lists.ApprovedUsers)
     if (PermissionLevel == False):
         await ctx.channel.send("This user is not approved")
     elif (PermissionLevel == 0):
         await ctx.channel.send("This user's permissions have been revoked.")
     else:
         await ctx.channel.send(f"This user is approved and has {PermissionLevel} Permission Level")
-    
+
 # Adds user, requires owner access
 @Triton.command(name='approve')
 async def ApproveUser(ctx, userid, level):
-    if (await SadogirePermissions.PermissionsCheck(ctx.author.id) == 3):
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == 3):
         print("Permissions check passed!")
         Lists.ApprovedUsers.append([int(userid), UserPermissions(int(level), False)])
-    print(Lists.ApprovedUsers)
+    await SavePrep()
 
 
 
@@ -111,7 +112,17 @@ def warnformat(msg, *args, **kwargs):
     # ignore everything except the message
     return str(msg) + '\n'
 
+# Save function
+async def SavePrep():
+    await FileOperations.Save([Lists.ApprovedUsers, Lists.SilenceList], f"./data/{Config.FILENAME}")
 
+async def Load():
+    try:
+        SavedList = await FileOperations.Load(f"./data/{Config.FILENAME}")
+        Lists.ApprovedUsers = SavedList[0]
+        Lists.SilenceList = SavedList[1]
+    except:
+        print("Unable to load, does data.sadogire exist?")
 
 def Boot():
     warnings.formatwarning = warnformat
