@@ -1,7 +1,7 @@
 import zmq, zlib, pickle, base64
 
 from SadogireObjects import Request
-from Config import SECRET, INPORT
+from Variables.Config import SECRET, INPORT
 
 # Cryptography
 import cryptography
