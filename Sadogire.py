@@ -120,13 +120,14 @@ def warnformat(msg, *args, **kwargs):
 
 # Save function
 async def SavePrep():
-    await FileOperations.Save([Lists.ApprovedUsers, Lists.SilenceList], f"./data/{Config.FILENAME}")
+    await FileOperations.Save([Lists.ApprovedUsers, Lists.SilenceList, RelayID], f"./data/{Config.FILENAME}")
 
 async def Load():
     try:
         SavedList = await FileOperations.Load(f"./data/{Config.FILENAME}")
         Lists.ApprovedUsers = SavedList[0]
         Lists.SilenceList = SavedList[1]
+        RelayID = SavedList[2]
     except:
         print("Unable to load, does data.sadogire exist?")
 
@@ -136,4 +137,5 @@ def Boot():
     CheckConfig()
     Triton.run(Config.TOKEN)
 
+RelayID=0 # Kludge
 Boot()
