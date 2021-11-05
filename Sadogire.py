@@ -77,15 +77,21 @@ async def QueryUser(ctx, userid=None):
     elif (PermissionLevel == 0):
         await ctx.channel.send("This user's permissions have been revoked.")
     else:
-        await ctx.channel.send(f"This user is approved and has {PermissionLevel} Permission Level")
+        await ctx.channel.send(f"This user is approved and has permissions level {PermissionLevel}")
 
 # Adds user, requires owner access
 @Triton.command(name='approve')
 async def ApproveUser(ctx, userid, level):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == 3):
-        print("Permissions check passed!")
         Lists.ApprovedUsers.append([int(userid), UserPermissions(int(level), False)])
     await SavePrep()
+
+# Flips permissions of a user
+@Triton.command(name='switch')
+async def RevRes(ctx, userid):
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == 3):
+        await SadogirePermissions.RRPermissions(int(userid), Lists.ApprovedUsers)
+        await SavePrep()
 
 
 
