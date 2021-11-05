@@ -43,12 +43,13 @@ async def Init():
         if (isSadoObject == False): # If Unknown - Deny
             await sock.send(b"You're delusional")
         else:
-            Response = Respond(Request)
+            Response = await Respond(Request)
+            await sock.send(Response)
             
 
 
 async def Respond(SadogireObject):
-    pass;
+    return b"OK!"
     
 async def DetermineObject(message):
     if (type(message) == Request or type(message) == NodeIdentity): # Checks for Request Object
