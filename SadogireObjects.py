@@ -36,3 +36,18 @@ class Reconfiguration:
         self.GuildID=GId
         self.GuildMode=GMode
         self.WebhookURL=WHUrl
+
+class UserPermissions:
+    __PermissionLevel=None
+    __Revoked=False
+
+    def __init__(self, PermissionsLevel=0, Revoked=False):
+        self.PermissionLevel=PermissionsLevel
+        self.Revoked=Revoked
+    
+    def UpdatePermissions(self, Level):
+        self.PermissionLevel=Level
+    def TogglePermissions(self):
+        self.Revoked=not self.Revoked
+        
+        
