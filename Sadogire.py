@@ -41,7 +41,7 @@ async def Respond(SadogireObject):
     return b"OK!"
     
 async def DetermineObject(message):
-    if (type(message) == Request or type(message) == NodeIdentity): # Checks for Request Object
+    if (type(message) == Request or type(message) == NodeIdentity or type(message) == Reconfiguration): # Checks for Request Object
         return True
     else:
         return False
