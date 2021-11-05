@@ -8,11 +8,10 @@ async def PermissionsCheck(userid):
     if (userid == OWNERID):
         return 3
     if userid in (item[0] for item in ApprovedUsers):
-        Req = [item for item in ApprovedUsers 
-                   if userid in item[0]]
+        Req = [item for item in ApprovedUsers if userid == item[0]]
         print(Req)
-        if (Req[1].Revoked == True):
+        if (Req[0][1].Revoked == True):
             return 0
-        return Req[1].PermissionLevel
+        return Req[0][1].PermissionLevel
     else:
         return False

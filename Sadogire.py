@@ -68,19 +68,23 @@ async def on_ready():
 async def QueryUser(ctx, userid=None):
     if (userid==None):
         userid = ctx.author.id
-        PermissionLevel=await SadogirePermissions.PermissionsCheck(userid)
-        if (PermissionLevel == False):
-            await ctx.channel.send("This user is not approved")
-        elif (PermissionLevel == 0):
-            await ctx.channel.send("This user's permissions have been revoked.")
-        else:
-            await ctx.channel.send(f"This user is approved and has {PermissionLevel} Permission Level")
-    else:
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id == 0)):
         await ctx.channel.send("You are not approved to use this command.")
-
-
-
-
+    PermissionLevel=await SadogirePermissions.PermissionsCheck(int(userid))
+    if (PermissionLevel == False):
+        await ctx.channel.send("This user is not approved")
+    elif (PermissionLevel == 0):
+        await ctx.channel.send("This user's permissions have been revoked.")
+    else:
+        await ctx.channel.send(f"This user is approved and has {PermissionLevel} Permission Level")
+    
+# Adds user, requires owner access
+@Triton.command(name='approve')
+async def ApproveUser(ctx, userid, level):
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id) == 3):
+        print("Permissions check passed!")
+        Lists.ApprovedUsers.append([int(userid), UserPermissions(int(level), False)])
+    print(Lists.ApprovedUsers)
 
 
 
