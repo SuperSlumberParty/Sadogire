@@ -11,8 +11,8 @@ from discord.ext.commands import Bot, has_permissions, CheckFailure
 
 
 from Variables import Config, Lists
-from SadogireObjects import *
-from Utility import Encryption, FileOperations, SadogirePermissions, Processing
+from Classes import SadogirePermissions, SadogireObjects, StarhookControl
+from Utility import Encryption, FileOperations, Processing
 
 import zmq # Communication via tcp
 import zmq.asyncio
@@ -48,13 +48,13 @@ async def FormResponse(SadoObj):
     return reply
     
 async def DetermineObject(message):
-    if (type(message) == Request or type(message) == NodeIdentity or type(message) == Reconfig): # Checks for Request Object
+    if (type(message) == SadogireObjects.Request or type(message) == SadogireObjects.NodeIdentity or type(message) == SadogireObjects.Reconfig): # Checks for Request Object
         return True
     else:
         return False
 
 async def WAIProcess(SadoObj, reply): 
-    if (type(SadoObj) != Request):
+    if (type(SadoObj) != SadogireObjects.Request):
         return ["BAD", None]
     reply[0] = "WAI"
     reply[1] = await Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList)
@@ -106,7 +106,7 @@ async def QueryUser(ctx, userid=None):
 async def ApproveUser(ctx, userid, level):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == 3):
         if (await SadogirePermissions.GetUser(int(userid), Lists.ApprovedUsers) == False):
-            Lists.ApprovedUsers.append([int(userid), UserPermissions(int(level), False)])
+            Lists.ApprovedUsers.append([int(userid), SadogireObjects.UserPermissions(int(level), False)])
             await SavePrep()
         else:
             await ctx.channel.send("This user is already on the approved list.")
