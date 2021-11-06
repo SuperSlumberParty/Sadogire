@@ -15,5 +15,3 @@ async def AssignNode(NDID, SHList):
 async def EditNode(NDID, ChannelName, GuildName):
     NDID.ChannelName=ChannelName
     NDID.GuildName=GuildName
-
-# TODO: Reconfig (RCF) Opearations

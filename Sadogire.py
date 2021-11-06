@@ -39,7 +39,6 @@ async def Init():
 
 
 async def FormResponse(SadoObj):
-    global RelayID
     reply=[None, None] # Declare reply variable, must be a list with 2 variables
     if (SadoObj.Identity == None):
         reply = await WAIProcess(SadoObj, reply)
@@ -53,12 +52,21 @@ async def DetermineObject(message):
     else:
         return False
 
-async def WAIProcess(SadoObj, reply): 
-    if (type(SadoObj) != SadogireObjects.Request):
+async def WAIProcess(SadoObj, reply):
+    global RelayID 
+    if (type(SadoObj) == SadogireObjects.Request):
+        reply[0] = "WAI"
+        reply[1] = await Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList)
+        return reply
+    elif (type(SadoObj) == SadogireObjects.Reconfig):
+        reply[0] = "OK!"
+        SadoObj.Edit(RelayID)
+        reply[1] = SadoObj
+        RelayID=RelayID+1
+        return reply
+    else:
         return ["BAD", None]
-    reply[0] = "WAI"
-    reply[1] = await Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList)
-    return reply
+
 
 async def Process(SadoObj):
     pass

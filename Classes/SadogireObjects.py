@@ -35,6 +35,18 @@ class Reconfig:
         self.GuildID=GId
         self.GuildMode=GMode
         self.WebhookURL=WHUrl
+    
+    def Edit(self, Id=None, CId=None, GId=None, GMode=None, WHUrl=None):
+        if (Id != None):
+            self.Identity = Id
+        if (CId != None):
+            self.ChannelID = CId
+        if (GId != None):
+            self.GuildID = GId
+        if (GMode != None):
+            self.GuildMode = GMode
+        if (WHUrl != None):
+            self.WebhookURL = WHUrl
 
 class UserPermissions:
     PermissionLevel=None
