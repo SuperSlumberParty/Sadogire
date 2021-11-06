@@ -1,3 +1,4 @@
 ApprovedUsers=[]
 SilenceList=[]
+StarhookList=[]
 ReconfigQueueList=[]

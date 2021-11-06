@@ -12,7 +12,7 @@ from discord.ext.commands import Bot, has_permissions, CheckFailure
 
 from Variables import Config, Lists
 from SadogireObjects import *
-from Utility import Encryption, FileOperations, SadogirePermissions
+from Utility import Encryption, FileOperations, SadogirePermissions, Processing
 
 import zmq # Communication via tcp
 import zmq.asyncio
@@ -33,19 +33,40 @@ async def Init():
         if (isSadoObject == False): # If Unknown - Deny
             await sock.send(b"You're delusional")
         else:
-            Response = await Respond(Request)
-            await sock.send(Response)
+            Response = await FormResponse(Request)
+            await sock.send(await Processing.Pickle(Response))
             
 
 
-async def Respond(SadogireObject):
-    return b"OK!"
+async def FormResponse(SadoObj):
+    global RelayID
+    reply=[None, None] # Declare reply variable, must be a list with 2 variables
+    if (SadoObj.Identity == None):
+        reply = await WAIProcess(SadoObj, reply)
+    else:
+        reply = await Process(SadoObj)
+    return reply
     
 async def DetermineObject(message):
-    if (type(message) == Request or type(message) == NodeIdentity or type(message) == Reconfiguration): # Checks for Request Object
+    if (type(message) == Request or type(message) == NodeIdentity or type(message) == Reconfig): # Checks for Request Object
         return True
     else:
         return False
+
+async def WAIProcess(SadoObj, reply): 
+    if (type(SadoObj) != Request):
+        return ["BAD", None]
+    reply[0] = "WAI"
+    reply[1] = await Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList)
+    return reply
+
+async def Process(SadoObj):
+    pass
+
+
+
+
+
 
 # Bot preconfiguration
 Triton=commands.Bot(command_prefix="<", case_insensitive=True)
@@ -71,6 +92,7 @@ async def QueryUser(ctx, userid=None):
         userid = ctx.author.id
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == False):
         await ctx.channel.send("You are not approved to use this command.")
+        return
     PermissionLevel=await SadogirePermissions.PermissionsCheck(int(userid), Lists.ApprovedUsers)
     if (PermissionLevel == False):
         await ctx.channel.send("This user is not approved")
@@ -83,8 +105,12 @@ async def QueryUser(ctx, userid=None):
 @Triton.command(name='approve')
 async def ApproveUser(ctx, userid, level):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == 3):
-        Lists.ApprovedUsers.append([int(userid), UserPermissions(int(level), False)])
-    await SavePrep()
+        if (await SadogirePermissions.GetUser(int(userid), Lists.ApprovedUsers) == False):
+            Lists.ApprovedUsers.append([int(userid), UserPermissions(int(level), False)])
+            await SavePrep()
+        else:
+            await ctx.channel.send("This user is already on the approved list.")
+    print(Lists.ApprovedUsers)
 
 # Flips permissions of a user
 @Triton.command(name='switch')
@@ -93,6 +119,20 @@ async def RevRes(ctx, userid):
         await SadogirePermissions.RRPermissions(int(userid), Lists.ApprovedUsers)
         await SavePrep()
 
+# Adds own userid to SilenceList
+@Triton.command(name='silence')
+async def SilList(ctx):
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) > 0):
+        print("Permissions check passed!")
+        AuthorId = str(ctx.author.id)
+        if (AuthorId in Lists.SilenceList):
+            Lists.SilenceList = [id for id in Lists.SilenceList if AuthorId not in id]
+            await SavePrep()
+        else:
+            Lists.SilenceList.append(AuthorId)
+            await SavePrep()
+    else:
+        print("Permissions check failed!")
 
 
 # Config checks before initialization 
@@ -125,6 +165,7 @@ async def SavePrep():
 async def Load():
     try:
         SavedList = await FileOperations.Load(f"./data/{Config.FILENAME}")
+        print(SavedList)
         Lists.ApprovedUsers = SavedList[0]
         Lists.SilenceList = SavedList[1]
         RelayID = SavedList[2]

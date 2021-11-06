@@ -17,6 +17,8 @@ async def PermissionsCheck(userid, ApprovedUsers):
     if (userid == OWNERID):
         return 3
     User = await GetUser(userid, ApprovedUsers)
+    if (User == False):
+        return False # Not A User
     if (User.Revoked == True):
             return 0
     return User.PermissionLevel

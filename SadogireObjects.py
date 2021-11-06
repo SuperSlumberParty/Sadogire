@@ -1,9 +1,8 @@
 class Request:
     MessageType=None
+    Identity=None
     # 0 - Ping, Content should be None
-    # 1 - Node message, Content states 
-    # 2 - WhoAmI, assigns ID number, Content states what server and channel it's relaying from
-    # 3 - WhereAmI, Contains either guild or channel info
+    # 1 - Node message, Content states string needed to be processed
     Content=None
 
     def GetType(self):
@@ -23,7 +22,7 @@ class NodeIdentity:
         self.ChannelName=ChannelName
         self.GuildName=GuildName
 
-class Reconfiguration:
+class Reconfig:
     Identity=None
     ChannelID=None
     GuildID=None
