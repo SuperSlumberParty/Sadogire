@@ -1,21 +1,29 @@
-# Cryptography
+# Utility.Cryptography is responsible for Encoding&Encrypting and Decrypting&Decoding messages Sadogire sends and receives
+# Encoding&Encrypting is called "Scramble", while Decrypting&Decoding is called "Unscramble"
+# The algorhithm uses HKDF for Derision, which uses SECRET from Variables.Config
+
+# Cryptography libraries
 import cryptography
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import _get_backend, default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+# Encoding
 import base64
-
 # Compression
 import pickle, zlib
+# Derision secret key
+from Variables.Config import SECRET
+
+
 
 # Encrypts a message to be replied
-async def Scramble(REP, SECRET):
+async def Scramble(REP):
     Key = Fernet(await GetEncKey(SECRET))
     return Key.encrypt(zlib.compress(pickle.dumps(REP)))
 
 # Unpacks a pickled compressed object into a readable SadogireObject
-async def Unscramble(REQ, SECRET):
+async def Unscramble(REQ):
     #        unpickles a decompressed Decrypted Object
     return pickle.loads(zlib.decompress(await Decrypt(REQ, SECRET)))
 

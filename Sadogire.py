@@ -11,9 +11,9 @@ from discord.ext.commands import Bot, has_permissions, CheckFailure
 
 
 from Variables import Config, Lists
-from Classes import SadogirePermissions, SadogireObjects
-from Utility import Encryption, FileOperations, Processing
-from Handling import StarhookControl, Responses
+from Classes import SadogireObjects
+from Utility import Cryptography, FileOperations
+from Handling import StarhookControl, Responses, SadogirePermissions
 
 import zmq # Communication via tcp
 import zmq.asyncio
@@ -27,13 +27,13 @@ async def Init():
     sock.setsockopt(zmq.SNDTIMEO, Config.TIMEOUT)
     sock.bind(f"tcp://*:{Config.INPORT}")
     while True:
-        Request = await Encryption.Unscramble(await sock.recv(), Config.SECRET) #Unscramble (Decrypt&Decode) an object
+        Request = await Cryptography.Unscramble(await sock.recv()) #Unscramble (Decrypt&Decode) an object
         isSadoObject = await Responses.DetermineObject(Request) #Check if object belongs to SadogireObjects
         if (isSadoObject == False): # If not - Deny
             await sock.send(b"You're delusional")
         else:
-            Response = await Responses.FormResponse(Request) # Send Object for processing
-            await sock.send(await Encryption.Scramble(Response, Config.SECRET))
+            Response = await Responses.GetResponse(Request) # Send Object for processing
+            await sock.send(await Cryptography.Scramble(Response))
 
 # Bot preconfiguration
 Triton=commands.Bot(command_prefix="<", case_insensitive=True)
@@ -53,6 +53,7 @@ async def on_ready():
     print("Sadogire is running!")
     #await ActionLog("Sadogire instance is running. Awaiting nodes")
 
+# Queries whether or not this user is approved to use the bot
 @Triton.command(name='query')
 async def QueryUser(ctx, userid=None):
     if (userid==None):
@@ -68,7 +69,8 @@ async def QueryUser(ctx, userid=None):
     else:
         await ctx.channel.send(f"This user is approved and has permissions level {PermissionLevel}")
 
-# Adds user, requires owner access
+# Approves user, requires owner access
+# This command *should* be only available to the owner
 @Triton.command(name='approve')
 async def ApproveUser(ctx, userid, level):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == 3):
@@ -80,6 +82,7 @@ async def ApproveUser(ctx, userid, level):
     print(Lists.ApprovedUsers)
 
 # Flips permissions of a user
+# This command *should* be only available to the owner
 @Triton.command(name='switch')
 async def RevRes(ctx, userid):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == 3):
@@ -87,18 +90,17 @@ async def RevRes(ctx, userid):
         await SavePrep()
 
 # Adds own userid to SilenceList
+# This command requires the user to be approved
 @Triton.command(name='silence')
 async def SilList(ctx):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) > 0):
-        AuthorId = str(ctx.author.id)
+        AuthorId = str(ctx.author.id) # Get author ID
         if (AuthorId in Lists.SilenceList):
             Lists.SilenceList = [id for id in Lists.SilenceList if AuthorId not in id]
             await SavePrep()
         else:
             Lists.SilenceList.append(AuthorId)
             await SavePrep()
-    else:
-        warnings.warn("Permissions check failed!")
 
 
 # Config checks before initialization 
@@ -138,8 +140,8 @@ async def Load():
         warnings.warn("Unable to load, does data.sadogire exist?\nError:\n" + e)
 
 def Boot():
-    warnings.formatwarning = warnformat
-    FileOperations.Setup()
+    warnings.formatwarning = warnformat #Issue warnings without showing lines
+    FileOperations.Setup() # 
     CheckConfig()
     Triton.run(Config.TOKEN)
 

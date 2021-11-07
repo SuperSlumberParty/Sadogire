@@ -1,6 +1,12 @@
+# This file states class types Sadogire is using
+# If you need to change this - reflect the changes for Starhook instances aswell
+# Every class (except for UserPermissions) has an "Identity" variable, which tells Sadogire from what Starhook instance a message is coming from
+
+# Request Class (RCF)
+# This class is responsible for sending messages to be processed and pinging the server in case it's not responding
 class Request:
-    MessageType=None
     Identity=None
+    MessageType=None
     # 0 - Ping, Content should be None
     # 1 - Node message, Content states string needed to be processed
     Content=None
@@ -12,6 +18,8 @@ class Request:
         self.MessageType=MsgType
         self.Content=Cont
 
+# NodeIdentity class (NDID)
+# This class is responsible for identifying itself to the Sadogire instance and what it relays from.
 class NodeIdentity:
     Identity=None
     ChannelName=None
@@ -22,6 +30,8 @@ class NodeIdentity:
         self.ChannelName=ChannelName
         self.GuildName=GuildName
 
+# Reconfig class (RCF) 
+# This class is responsible for changing settings of a Starhook instance.
 class Reconfig:
     Identity=None
     ChannelID=None
@@ -48,6 +58,9 @@ class Reconfig:
         if (WHUrl != None):
             self.WebhookURL = WHUrl
 
+# UserPermissions class (UP) 
+# This class is responsible for user identification and Sadogire command permission checks
+# See Handling.SadogirePermissions for more information
 class UserPermissions:
     PermissionLevel=None
     Revoked=False
