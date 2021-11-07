@@ -47,14 +47,17 @@ async def WAYProcess(SadoObj, reply):
 
 # Process SadogireObjects object with an Identity
 async def Process(SadoObj, reply):
+    # Appends NDID to SHList
     if (type(SadoObj) == SadogireObjects.NodeIdentity):
-        if (await StarhookControl.CheckNode(SadoObj.Identity)):
+        if (await StarhookControl.CheckNode(SadoObj.Identity)): # If exists - Reply with BAD
             reply[0] = "BAD"
             reply[1] = None
         else:
             Lists.StarhookList.append(SadoObj)
+    # TODO: Assign RCFVars to RCF object and return edited RCF
     elif (type(SadoObj) == SadogireObjects.Reconfig):
-        SadoObj.edit(StarhookControl.GetStarhookID(Lists.StarhookList))
+        vars = StarhookRCF.GetRCFVars(SadoObj.Identity)
+        SadoObj.edit(StarhookControl.GetStarhookID(Lists.StarhookList)) # Assigns starhook ID(????????,WHY?)
         reply[0] = "WAY"
         reply[1] = SadoObj
     elif (type(SadoObj) == SadogireObjects.Request):

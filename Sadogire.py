@@ -77,7 +77,7 @@ async def QueryUser(ctx, userid=None):
 # This command *should* be only available to the owner
 @Triton.command(name='approve')
 async def ApproveUser(ctx, userid, level):
-    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == 3):
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == Config.OWNERLEVEL):
         if (await SadogirePermissions.GetUser(int(userid), Lists.ApprovedUsers) == False):
             Lists.ApprovedUsers.append([int(userid), SadogireObjects.UserPermissions(int(level), False)])
             await SavePrep()
@@ -89,7 +89,7 @@ async def ApproveUser(ctx, userid, level):
 # This command *should* be only available to the owner
 @Triton.command(name='switch')
 async def RevRes(ctx, userid):
-    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == 3):
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == Config.OWNERLEVEL):
         await SadogirePermissions.RRPermissions(int(userid), Lists.ApprovedUsers)
         await SavePrep()
 
@@ -110,9 +110,23 @@ async def SilList(ctx):
 # This command *should* be only available to the owner
 @Triton.command(name='resetdata')
 async def ResetData(ctx):
-    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == 3):
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == Config.OWNERLEVEL):
         await SavePrep()
-        
+
+# Create an RCF Task
+# This command requires permission level 2 or higher
+@Triton.command(name='Task')
+async def AddRCFTask(ctx, id, vars):
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) >= 2):
+        if(await StarhookRCF.CreateRCFTask(int(id), vars)):
+            await ctx.channel.send("Task created")
+        else:
+            await ctx.channel.send("Failed to create task!")
+
+@Triton.command(name='dump')
+async def DumpLists(ctx):
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == Config.OWNERLEVEL):
+        await ctx.author.send(f"ApprovedUsers: {Lists.ApprovedUsers}\nSilenceList: {Lists.SilenceList}\nStarhookList: {Lists.StarhookList}\nReconfigQueueList: {Lists.ReconfigQueueList}")
 
 
 # Config checks before initialization 

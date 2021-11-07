@@ -19,6 +19,39 @@ async def GetRCFVars(id):
     if (await CheckRQL(id)):
         return [RQLID[1] for RQLID in ReconfigQueueList if id == RQLID[0]]
 
+# Validates vars list from CreateRCFTask
+# Should be [int,int,bool,string], any member of the list can be NoneType aswell
+async def ValidateRCFTask(vars):
+    if (len(vars) != 4):
+        return False
+    if (type(vars[0]) == int or type(vars[0]) == None):
+        if (type(vars[1]) == int or type(vars[1]) == None):
+            if (type(vars[2]) == bool or type(vars[2]) == None):
+                if (type(vars[3]) == str or type(vars[3]) == None):
+                    return True
+    return False
+
+async def CreateRCFTask(id,vars):
+    RCFVars = vars.split(";") # Separate variables
+    # Assign nonetype to "None"
+    for i in RCFVars:
+        if i == "None":
+            i=None
+    RCFVars[0]=int(RCFVars[0])
+    RCFVars[1]=int(RCFVars[1])
+
+    # Assign bool to 3rd variable
+    if (RCFVars[2].lower() == "true"):
+        RCFVars[2] = True
+    elif (RCFVars[2].lower() == "false"):
+        RCFVars[2] = False
+    
+    if(await ValidateRCFTask(RCFVars)):
+        await AddRCFTask(id, RCFVars)
+        return True
+    return False
+
+
 # Adds a Reconfigure Task
 # NOTE: This function returns a boolean to notify on whether or not a task has been overriden
 # False stands for a new task, while True stands for an override
