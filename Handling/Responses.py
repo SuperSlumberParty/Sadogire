@@ -62,6 +62,13 @@ async def Process(SadoObj, reply):
         reply[0] = "WAY"
         reply[1] = SadoObj
     elif (type(SadoObj) == SadogireObjects.Request):
-        pass
+        reply[0] = "OK!" # Assume OK Response
+        reply[1] = "Pong!" # Assume ping type
+        if (StarhookRCF.CheckRQL(SadoObj.Identity)): # If RCF Task present - Override REP to RCF
+            reply[0] = "RCF"
+        if (SadoObj.Content != None):
+            reply[1] = Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList)
+        
     else:
-        pass
+        reply[0] = "BAD"
+        reply[1] = None
