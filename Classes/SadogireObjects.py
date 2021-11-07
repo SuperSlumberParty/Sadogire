@@ -11,7 +11,7 @@ class Request:
     # 1 - Node message, Content states string needed to be processed
     Content=None
 
-    def GetType(self):
+    def getType(self):
         return self.MessageType
 
     def __init__(self, MsgType, Cont):
@@ -46,7 +46,7 @@ class Reconfig:
         self.GuildMode=GMode
         self.WebhookURL=WHUrl
     
-    def Edit(self, Id=None, CId=None, GId=None, GMode=None, WHUrl=None):
+    def edit(self, Id=None, CId=None, GId=None, GMode=None, WHUrl=None):
         if (Id != None):
             self.Identity = Id
         if (CId != None):

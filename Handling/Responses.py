@@ -27,7 +27,7 @@ async def GetResponse(SadoObj):
     if (SadoObj.Identity == None): # If not - process with a WAI response
         await WAYProcess(SadoObj, reply)
     else:
-        await Process(SadoObj)
+        await Process(SadoObj, reply)
     return reply # Return response
 
 # Process SadogireObjects object without an Identity
@@ -37,7 +37,7 @@ async def WAYProcess(SadoObj, reply):
         reply[1] = await Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList) # Do your job
         return reply
     elif (type(SadoObj) == SadogireObjects.Reconfig):
-        SadoObj.Edit(await StarhookControl.GetStarhookID(Lists.StarhookList))
+        SadoObj.edit(await StarhookControl.GetStarhookID(Lists.StarhookList))
         reply[0] = "WAY"
         reply[1] = SadoObj
         return reply
@@ -56,8 +56,9 @@ async def Process(SadoObj, reply):
             Lists.StarhookList.append(SadoObj)
     # TODO: Assign RCFVars to RCF object and return edited RCF
     elif (type(SadoObj) == SadogireObjects.Reconfig):
-        vars = StarhookRCF.GetRCFVars(SadoObj.Identity)
-        SadoObj.edit(StarhookControl.GetStarhookID(Lists.StarhookList)) # Assigns starhook ID(????????,WHY?)
+        vars = await StarhookRCF.GetRCFVars(SadoObj.Identity)
+        print(vars)
+        SadoObj.edit(None, vars[0], vars[1], vars[2], vars[3])
         reply[0] = "WAY"
         reply[1] = SadoObj
     elif (type(SadoObj) == SadogireObjects.Request):

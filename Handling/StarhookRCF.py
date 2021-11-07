@@ -17,7 +17,7 @@ async def GetRCFlist(id):
 # Retrieves RCF variables
 async def GetRCFVars(id):
     if (await CheckRQL(id)):
-        return [RQLID[1] for RQLID in ReconfigQueueList if id == RQLID[0]]
+        return [RQLID[1] for RQLID in ReconfigQueueList if id == RQLID[0]][0]
 
 # Validates vars list from CreateRCFTask
 # Should be [int,int,bool,string], any member of the list can be NoneType aswell

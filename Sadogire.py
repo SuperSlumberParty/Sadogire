@@ -111,6 +111,10 @@ async def SilList(ctx):
 @Triton.command(name='resetdata')
 async def ResetData(ctx):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == Config.OWNERLEVEL):
+        Lists.ReconfigQueueList=[]
+        Lists.SilenceList=[]
+        Lists.StarhookList=[]
+        Lists.ApprovedUsers=[]
         await SavePrep()
 
 # Create an RCF Task
@@ -123,6 +127,8 @@ async def AddRCFTask(ctx, id, vars):
         else:
             await ctx.channel.send("Failed to create task!")
 
+# Sends all list contents in DM's
+# This command requires owner permissions
 @Triton.command(name='dump')
 async def DumpLists(ctx):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == Config.OWNERLEVEL):
@@ -167,7 +173,7 @@ async def Load():
 
 def Boot():
     warnings.formatwarning = warnformat #Issue warnings without showing lines
-    FileOperations.Setup() # 
+    FileOperations.Setup()
     CheckConfig()
     Triton.run(Config.TOKEN)
 
