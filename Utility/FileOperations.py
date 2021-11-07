@@ -1,5 +1,6 @@
 # This file is responsible for everything related to files and directories, be it saving configuration or initialising Sadogire
 import os, pickle
+from Classes import SadogireObjects
 
 # Setup Sadogire for launch
 def Setup():

@@ -11,13 +11,12 @@ from discord.ext.commands import Bot, has_permissions, CheckFailure
 
 
 from Variables import Config, Lists
-from Classes import SadogirePermissions, SadogireObjects, StarhookControl
+from Classes import SadogirePermissions, SadogireObjects
 from Utility import Encryption, FileOperations, Processing
+from Handling import StarhookControl, Responses
 
 import zmq # Communication via tcp
 import zmq.asyncio
-
-import json # Message enconding
 
 
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) # Error supression for zmq
@@ -28,53 +27,13 @@ async def Init():
     sock.setsockopt(zmq.SNDTIMEO, Config.TIMEOUT)
     sock.bind(f"tcp://*:{Config.INPORT}")
     while True:
-        Request = await Encryption.Unscramble(await sock.recv(), Config.SECRET)
-        isSadoObject = await DetermineObject(Request)
-        if (isSadoObject == False): # If Unknown - Deny
+        Request = await Encryption.Unscramble(await sock.recv(), Config.SECRET) #Unscramble (Decrypt&Decode) an object
+        isSadoObject = await Responses.DetermineObject(Request) #Check if object belongs to SadogireObjects
+        if (isSadoObject == False): # If not - Deny
             await sock.send(b"You're delusional")
         else:
-            Response = await FormResponse(Request)
-            await sock.send(await Processing.Pickle(Response))
-            
-
-
-async def FormResponse(SadoObj):
-    reply=[None, None] # Declare reply variable, must be a list with 2 variables
-    if (SadoObj.Identity == None):
-        reply = await WAIProcess(SadoObj, reply)
-    else:
-        reply = await Process(SadoObj)
-    return reply
-    
-async def DetermineObject(message):
-    if (type(message) == SadogireObjects.Request or type(message) == SadogireObjects.NodeIdentity or type(message) == SadogireObjects.Reconfig): # Checks for Request Object
-        return True
-    else:
-        return False
-
-async def WAIProcess(SadoObj, reply):
-    global RelayID 
-    if (type(SadoObj) == SadogireObjects.Request):
-        reply[0] = "WAI"
-        reply[1] = await Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList)
-        return reply
-    elif (type(SadoObj) == SadogireObjects.Reconfig):
-        reply[0] = "OK!"
-        SadoObj.Edit(RelayID)
-        reply[1] = SadoObj
-        RelayID=RelayID+1
-        return reply
-    else:
-        return ["BAD", None]
-
-
-async def Process(SadoObj):
-    pass
-
-
-
-
-
+            Response = await Responses.FormResponse(Request) # Send Object for processing
+            await sock.send(await Encryption.Scramble(Response, Config.SECRET))
 
 # Bot preconfiguration
 Triton=commands.Bot(command_prefix="<", case_insensitive=True)
@@ -131,7 +90,6 @@ async def RevRes(ctx, userid):
 @Triton.command(name='silence')
 async def SilList(ctx):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) > 0):
-        print("Permissions check passed!")
         AuthorId = str(ctx.author.id)
         if (AuthorId in Lists.SilenceList):
             Lists.SilenceList = [id for id in Lists.SilenceList if AuthorId not in id]
@@ -140,7 +98,7 @@ async def SilList(ctx):
             Lists.SilenceList.append(AuthorId)
             await SavePrep()
     else:
-        print("Permissions check failed!")
+        warnings.warn("Permissions check failed!")
 
 
 # Config checks before initialization 
@@ -168,17 +126,16 @@ def warnformat(msg, *args, **kwargs):
 
 # Save function
 async def SavePrep():
-    await FileOperations.Save([Lists.ApprovedUsers, Lists.SilenceList, RelayID], f"./data/{Config.FILENAME}")
+    await FileOperations.Save([Lists.ApprovedUsers, Lists.SilenceList], f"./data/{Config.FILENAME}")
 
+# Load (and assign) stuff from the data file
 async def Load():
     try:
         SavedList = await FileOperations.Load(f"./data/{Config.FILENAME}")
-        print(SavedList)
         Lists.ApprovedUsers = SavedList[0]
         Lists.SilenceList = SavedList[1]
-        RelayID = SavedList[2]
-    except:
-        print("Unable to load, does data.sadogire exist?")
+    except Exception as e:
+        warnings.warn("Unable to load, does data.sadogire exist?\nError:\n" + e)
 
 def Boot():
     warnings.formatwarning = warnformat
@@ -186,5 +143,4 @@ def Boot():
     CheckConfig()
     Triton.run(Config.TOKEN)
 
-RelayID=0 # Kludge
 Boot()
