@@ -7,7 +7,7 @@
 
 from Classes import SadogireObjects
 from Utility import Processing
-from Handling import StarhookControl
+from Handling import StarhookControl, StarhookRCF
 from Variables import Lists
 
 
@@ -25,9 +25,9 @@ async def GetResponse(SadoObj):
     reply=[None, None] # Declare reply variable, must be a list with 2 variables
     # Check if SadogireObjects object has an identity
     if (SadoObj.Identity == None): # If not - process with a WAI response
-        reply = await WAYProcess(SadoObj, reply)
+        await WAYProcess(SadoObj, reply)
     else:
-        reply = await Process(SadoObj)
+        await Process(SadoObj)
     return reply # Return response
 
 # Process SadogireObjects object without an Identity
@@ -37,20 +37,27 @@ async def WAYProcess(SadoObj, reply):
         reply[1] = await Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList) # Do your job
         return reply
     elif (type(SadoObj) == SadogireObjects.Reconfig):
-        reply[0] = "WAY"
         SadoObj.Edit(await StarhookControl.GetStarhookID(Lists.StarhookList))
+        reply[0] = "WAY"
         reply[1] = SadoObj
         return reply
     else:
-        return ["BAD", None]
+        reply[0] = "BAD"
+        reply[1] = None
 
 # Process SadogireObjects object with an Identity
-async def Process(SadoObj):
+async def Process(SadoObj, reply):
     if (type(SadoObj) == SadogireObjects.NodeIdentity):
-        pass
-    elif (type(SadoObj) == SadogireObjects.Request):
-        pass
+        if (await StarhookControl.CheckNode(SadoObj.Identity)):
+            reply[0] = "BAD"
+            reply[1] = None
+        else:
+            Lists.StarhookList.append(SadoObj)
     elif (type(SadoObj) == SadogireObjects.Reconfig):
+        SadoObj.edit(StarhookControl.GetStarhookID(Lists.StarhookList))
+        reply[0] = "WAY"
+        reply[1] = SadoObj
+    elif (type(SadoObj) == SadogireObjects.Request):
         pass
     else:
         pass

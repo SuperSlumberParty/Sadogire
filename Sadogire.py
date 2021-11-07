@@ -13,7 +13,7 @@ from discord.ext.commands import Bot, has_permissions, CheckFailure
 from Variables import Config, Lists
 from Classes import SadogireObjects
 from Utility import Cryptography, FileOperations
-from Handling import StarhookControl, Responses, SadogirePermissions
+from Handling import StarhookControl, Responses, SadogirePermissions, StarhookRCF
 
 import zmq # Communication via tcp
 import zmq.asyncio
@@ -49,7 +49,11 @@ async def ActionLog(message):
 @Triton.event
 async def on_ready():
     asyncio.get_event_loop().create_task(Init())
-    await Load()
+    try:
+        await Load()
+    except:
+        warnings.warn(f"{Config.FILENAME} failed to load! Please (re)create {Config.FILENAME} in the \"data\" folder using the \"resetdata\" command!")
+
     print("Sadogire is running!")
     #await ActionLog("Sadogire instance is running. Awaiting nodes")
 
@@ -101,6 +105,14 @@ async def SilList(ctx):
         else:
             Lists.SilenceList.append(AuthorId)
             await SavePrep()
+
+# Reset/Create the data file
+# This command *should* be only available to the owner
+@Triton.command(name='resetdata')
+async def ResetData(ctx):
+    if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == 3):
+        await SavePrep()
+        
 
 
 # Config checks before initialization 
