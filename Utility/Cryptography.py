@@ -25,7 +25,10 @@ async def Scramble(REP):
 # Unpacks a pickled compressed object into a readable SadogireObject
 async def Unscramble(REQ):
     #        unpickles a decompressed Decrypted Object
-    return pickle.loads(zlib.decompress(await Decrypt(REQ, SECRET)))
+    DecryptedREQ = await Decrypt(REQ, SECRET)
+    if (DecryptedREQ == "Invalid Request"):
+        return DecryptedREQ
+    return pickle.loads(zlib.decompress(DecryptedREQ))
 
 # Decrypts the message
 async def Decrypt(Object, SECRET):

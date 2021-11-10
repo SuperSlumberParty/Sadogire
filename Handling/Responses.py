@@ -1,4 +1,4 @@
-# Handling.Responses is responsible for forming REP responses to requests from starhook objects
+# Sadogire.Handling.Responses is responsible for forming REP responses to requests from starhook objects
 # Responses are formed based on the type of object received and whether or not it has an Identity (See Classes.SadogireObjects for more info on Identity)
 # Response types are the following - "OK", "WAY", "RCF", "BAD"
 # If Identity is missing - Sadogire will respond with a "RCF" (ReConFigure) or "WAY" ("Who Are You") type response for Request and Reconfig objects respectively
@@ -43,7 +43,7 @@ async def WAYProcess(SadoObj, reply):
         return reply
     else:
         reply[0] = "BAD"
-        reply[1] = None
+        reply[1] = "NDID object in WAYProcess"
 
 # Process SadogireObjects object with an Identity
 async def Process(SadoObj, reply):
@@ -51,10 +51,9 @@ async def Process(SadoObj, reply):
     if (type(SadoObj) == SadogireObjects.NodeIdentity):
         if (await StarhookControl.CheckNode(SadoObj.Identity)): # If exists - Reply with BAD
             reply[0] = "BAD"
-            reply[1] = None
+            reply[1] = "NDID Exists"
         else:
             Lists.StarhookList.append(SadoObj)
-    # TODO: Assign RCFVars to RCF object and return edited RCF
     elif (type(SadoObj) == SadogireObjects.Reconfig):
         vars = await StarhookRCF.GetRCFVars(SadoObj.Identity)
         print(vars)
@@ -62,13 +61,12 @@ async def Process(SadoObj, reply):
         reply[0] = "WAY"
         reply[1] = SadoObj
     elif (type(SadoObj) == SadogireObjects.Request):
-        reply[0] = "OK!" # Assume OK Response
-        reply[1] = "Pong!" # Assume ping type
-        if (StarhookRCF.CheckRQL(SadoObj.Identity)): # If RCF Task present - Override REP to RCF
+        reply[0] = "Pong!" # Assume ping
+        reply[1] = None
+        if (await StarhookRCF.CheckRQL(SadoObj.Identity)): # If RCF Task present - Override OK to RCF
             reply[0] = "RCF"
-        if (SadoObj.Content != None):
-            reply[1] = Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList)
-        
+        if (SadoObj.MessageType != 0):
+            reply[1] = await Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList)
     else:
         reply[0] = "BAD"
-        reply[1] = None
+        reply[1] = "Unknown object in Process function"
