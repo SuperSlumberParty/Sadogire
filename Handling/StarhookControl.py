@@ -28,6 +28,6 @@ async def GetStarhookID(SHList):
     if not SHList: # Check if list is empty
         return 0
     while True:
-        if (CheckNode(i, SHList) == False):
+        if (await CheckNode(i, SHList) == False):
             return False
         i=i+1

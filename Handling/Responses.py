@@ -49,23 +49,28 @@ async def WAYProcess(SadoObj, reply):
 async def Process(SadoObj, reply):
     # Appends NDID to SHList
     if (type(SadoObj) == SadogireObjects.NodeIdentity):
-        if (await StarhookControl.CheckNode(SadoObj.Identity)): # If exists - Reply with BAD
-            reply[0] = "BAD"
-            reply[1] = "NDID Exists"
+        reply[0] = "OK"
+        if (await StarhookControl.CheckNode(SadoObj.Identity, Lists.StarhookList)): # If exists - Reply with BAD
+            await StarhookControl.EditNode(await StarhookControl.GetNode(SadoObj.Identity, Lists.StarhookList), SadoObj.ChannelName, SadoObj.GuildName)
         else:
+            print(f"Added {SadoObj.Identity} to NodeIdentity")
             Lists.StarhookList.append(SadoObj)
+    # Reconfigures a Node
     elif (type(SadoObj) == SadogireObjects.Reconfig):
         vars = await StarhookRCF.GetRCFVars(SadoObj.Identity)
         print(vars)
         SadoObj.edit(None, vars[0], vars[1], vars[2], vars[3])
         reply[0] = "WAY"
         reply[1] = SadoObj
+    # Request response
     elif (type(SadoObj) == SadogireObjects.Request):
-        reply[0] = "Pong!" # Assume ping
-        reply[1] = None
+        reply[0] = "OK" # Assume ping
+        reply[1] = "Pong!"
+        if (await StarhookControl.CheckNode(SadoObj.Identity, Lists.StarhookList) == False): # If object possesses an identity not known to Sadogire, send WAY
+            reply[0] = "WAY"
         if (await StarhookRCF.CheckRQL(SadoObj.Identity)): # If RCF Task present - Override OK to RCF
             reply[0] = "RCF"
-        if (SadoObj.MessageType != 0):
+        if (SadoObj.MessageType != 0): # If not ping
             reply[1] = await Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList)
     else:
         reply[0] = "BAD"

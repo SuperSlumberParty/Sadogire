@@ -22,29 +22,34 @@ async def GetRCFVars(id):
 # Validates vars list from CreateRCFTask
 # Should be [int,int,bool,string], any member of the list can be NoneType aswell
 async def ValidateRCFTask(vars):
+    print(vars)
     if (len(vars) != 4):
         return False
-    if (type(vars[0]) == int or type(vars[0]) == None):
-        if (type(vars[1]) == int or type(vars[1]) == None):
-            if (type(vars[2]) == bool or type(vars[2]) == None):
-                if (type(vars[3]) == str or type(vars[3]) == None):
+    if (type(vars[0]) == int or vars[0] == None):
+        if (type(vars[1]) == int or vars[1] == None):
+            if (type(vars[2]) == bool or vars[2] == None):
+                if (type(vars[3]) == str or vars[3] == None):
                     return True
     return False
 
 async def CreateRCFTask(id,vars):
     RCFVars = vars.split(";") # Separate variables
     # Assign nonetype to "None"
-    for i in RCFVars:
-        if i == "None":
-            i=None
-    RCFVars[0]=int(RCFVars[0])
-    RCFVars[1]=int(RCFVars[1])
+    for i in range(len(RCFVars)):
+        if RCFVars[i] == 'None':
+            RCFVars[i] = None
+    
+    if (RCFVars[0] != None):
+        RCFVars[0]=int(RCFVars[0])
+    if (RCFVars[1] != None):
+        RCFVars[1]=int(RCFVars[1])
 
     # Assign bool to 3rd variable
-    if (RCFVars[2].lower() == "true"):
-        RCFVars[2] = True
-    elif (RCFVars[2].lower() == "false"):
-        RCFVars[2] = False
+    if (RCFVars[2] != None):
+        if (RCFVars[2].lower() == "true"):
+            RCFVars[2] = True
+        elif (RCFVars[2].lower() == "false"):
+            RCFVars[2] = False
     
     if(await ValidateRCFTask(RCFVars)):
         await AddRCFTask(id, RCFVars)

@@ -36,7 +36,7 @@ async def Init():
             await sock.send(await Cryptography.Scramble(Response))
 
 # Bot preconfiguration
-Triton=commands.Bot(command_prefix="<", case_insensitive=True)
+Triton=commands.Bot(command_prefix="sg>", case_insensitive=True)
 
 # This function sends a message to a specified logchannel in the config
 async def ActionLog(message):
@@ -88,7 +88,7 @@ async def ApproveUser(ctx, userid, level):
 # Flips permissions of a user
 # This command *should* be only available to the owner
 @Triton.command(name='switch')
-async def RevRes(ctx, userid):
+async def RevokeRestore(ctx, userid):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == Config.OWNERLEVEL):
         await SadogirePermissions.RRPermissions(int(userid), Lists.ApprovedUsers)
         await SavePrep()
@@ -96,7 +96,7 @@ async def RevRes(ctx, userid):
 # Adds own userid to SilenceList
 # This command requires the user to be approved
 @Triton.command(name='silence')
-async def SilList(ctx):
+async def AddToSilenceList(ctx):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) > 0):
         AuthorId = str(ctx.author.id) # Get author ID
         if (AuthorId in Lists.SilenceList):
@@ -132,7 +132,7 @@ async def AddRCFTask(ctx, id, vars):
 @Triton.command(name='dump')
 async def DumpLists(ctx):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == Config.OWNERLEVEL):
-        await ctx.author.send(f"ApprovedUsers: {Lists.ApprovedUsers}\nSilenceList: {Lists.SilenceList}\nStarhookList: {Lists.StarhookList}\nReconfigQueueList: {Lists.ReconfigQueueList}")
+        await ctx.author.send(f"ApprovedUsers: {Lists.ApprovedUsers}\nSilenceList: {Lists.SilenceList}\nStarhookList: {Lists.StarhookList[0]}\nReconfigQueueList: {Lists.ReconfigQueueList}")
 
 
 # Config checks before initialization 
