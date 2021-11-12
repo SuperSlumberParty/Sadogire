@@ -51,7 +51,8 @@ async def Process(SadoObj, reply):
     if (type(SadoObj) == SadogireObjects.NodeIdentity):
         reply[0] = "OK"
         if (await StarhookControl.CheckNode(SadoObj.Identity, Lists.StarhookList)): # If exists - Reply with BAD
-            await StarhookControl.EditNode(await StarhookControl.GetNode(SadoObj.Identity, Lists.StarhookList), SadoObj.ChannelName, SadoObj.GuildName)
+            Node = await StarhookControl.GetNode(SadoObj.Identity, Lists.StarhookList)
+            await StarhookControl.EditNode(Node[0], SadoObj.ChannelName, SadoObj.GuildName)
         else:
             print(f"Added {SadoObj.Identity} to NodeIdentity")
             Lists.StarhookList.append(SadoObj)
