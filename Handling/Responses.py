@@ -63,6 +63,7 @@ async def Process(SadoObj, reply):
         SadoObj.edit(None, vars[0], vars[1], vars[2], vars[3])
         reply[0] = "WAY"
         reply[1] = SadoObj
+        await StarhookRCF.RemRCFTask(SadoObj.Identity)
     # Request response
     elif (type(SadoObj) == SadogireObjects.Request):
         reply[0] = "OK" # Assume ping
