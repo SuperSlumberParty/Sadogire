@@ -18,8 +18,9 @@ from Handling import StarhookControl, Responses, SadogirePermissions, StarhookRC
 import zmq # Communication via tcp
 import zmq.asyncio
 
-
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) # Error supression for zmq
+import os
+if (os.name == 'nt'):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) # Error supression for zmq
 
 # Server block start
 async def Init():
@@ -54,7 +55,7 @@ async def on_ready():
     except:
         warnings.warn(f"{Config.FILENAME} failed to load! Please (re)create {Config.FILENAME} in the \"data\" folder using the \"resetdata\" command!")
 
-    print("Sadogire is running!")
+    await ActionLog("Sadogire is running!")
     #await ActionLog("Sadogire instance is running. Awaiting nodes")
 
 # Queries whether or not this user is approved to use the bot
@@ -81,6 +82,7 @@ async def ApproveUser(ctx, userid, level):
         if (await SadogirePermissions.GetUser(int(userid), Lists.ApprovedUsers) == False):
             Lists.ApprovedUsers.append([int(userid), SadogireObjects.UserPermissions(int(level), False)])
             await SavePrep()
+            await ActionLog(f"<@{userid}> has been approved with permission level {level}")
         else:
             await ctx.channel.send("This user is already on the approved list.")
     print(Lists.ApprovedUsers)
@@ -92,6 +94,7 @@ async def RevokeRestore(ctx, userid):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == Config.OWNERLEVEL):
         await SadogirePermissions.RRPermissions(int(userid), Lists.ApprovedUsers)
         await SavePrep()
+        await ActionLog(f"<@{userid}>'s permissions have been flipped.'>")
 
 # Adds own userid to SilenceList
 # This command requires the user to be approved
@@ -102,8 +105,10 @@ async def AddToSilenceList(ctx):
         if (AuthorId in Lists.SilenceList):
             Lists.SilenceList = [id for id in Lists.SilenceList if AuthorId not in id]
             await SavePrep()
+            await ActionLog(f"<@{ctx.author.id}> has added himself to SilenceList")
         else:
             Lists.SilenceList.append(AuthorId)
+            await ActionLog(f"<@{ctx.author.id}> has removed himself from SilenceList")
             await SavePrep()
 
 # Reset/Create the data file
@@ -116,6 +121,7 @@ async def ResetData(ctx):
         Lists.StarhookList=[]
         Lists.ApprovedUsers=[]
         await SavePrep()
+        await ActionLog("Data has been reset")
 
 # Create an RCF Task
 # This command requires permission level 2 or higher
@@ -123,9 +129,9 @@ async def ResetData(ctx):
 async def AddRCFTask(ctx, id, vars):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) >= 2):
         if(await StarhookRCF.CreateRCFTask(int(id), vars)):
-            await ctx.channel.send("Task created")
+            await ActionLog("Task created")
         else:
-            await ctx.channel.send("Failed to create task!")
+            await ActionLog("Failed to create task!")
 
 # Sends all list contents in DM's
 # This command requires owner permissions
