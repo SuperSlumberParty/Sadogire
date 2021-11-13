@@ -25,7 +25,6 @@ if (os.name == 'nt'):
 # Server block start
 async def Init():
     sock = zmq.asyncio.Context().socket(zmq.REP)
-    sock.setsockopt(zmq.SNDTIMEO, Config.TIMEOUT)
     sock.bind(f"tcp://*:{Config.INPORT}")
     while True:
         Request = await Cryptography.Unscramble(await sock.recv()) #Unscramble (Decrypt&Decode) an object

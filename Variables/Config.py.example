@@ -7,7 +7,6 @@ LOGCHANNEL=0 # Discord channel ID, where log information will be sent
 
 # ZMQ configuration
 INPORT=4446 # Port for accepting data
-TIMEOUT=1000 # Timeout on sending data (Must match node receive timeout)
 
 # Permission configuration
 OWNERLEVEL=3 # Level for the user with the OWNERID as their discord userid
