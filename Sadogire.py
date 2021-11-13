@@ -153,9 +153,6 @@ def CheckConfig():
         warnings.warn("LOGCHANNEL is not set! You will not receive log information via discord!")
     if (Config.SECRET == "TwinklingStar"): # If the secret is default - warn the user
         warnings.warn("You are running Sadogire with the default secret! This is unsecure and may grant access to any third party!")
-    if (Config.TIMEOUT > 3000): # If timeout is over 3 seconds - issue a warning
-        warnings.warn("Timeout is too high! This may cause sadogire to malfunction!")
-
 
 
 # Monkeypatch, monkeypatch
