@@ -132,7 +132,7 @@ async def AddRCFTask(ctx, id, vars):
 @Triton.command(name='dump')
 async def DumpLists(ctx):
     if (await SadogirePermissions.PermissionsCheck(ctx.author.id, Lists.ApprovedUsers) == Config.OWNERLEVEL):
-        await ctx.author.send(f"ApprovedUsers: {Lists.ApprovedUsers}\nSilenceList: {Lists.SilenceList}\nStarhookList: {Lists.StarhookList[0]}\nReconfigQueueList: {Lists.ReconfigQueueList}")
+        await ctx.author.send(f"ApprovedUsers: {Lists.ApprovedUsers}\nSilenceList: {Lists.SilenceList}\nStarhookList: {Lists.StarhookList}\nReconfigQueueList: {Lists.ReconfigQueueList}")
 
 
 # Config checks before initialization 
@@ -177,4 +177,5 @@ def Boot():
     CheckConfig()
     Triton.run(Config.TOKEN)
 
-Boot()
+if __name__ == '__main__':
+    Boot()

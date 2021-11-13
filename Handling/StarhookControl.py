@@ -29,5 +29,5 @@ async def GetStarhookID(SHList):
         return 0
     while True:
         if (await CheckNode(i, SHList) == False):
-            return False
+            return i
         i=i+1
