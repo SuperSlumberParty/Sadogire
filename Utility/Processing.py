@@ -6,8 +6,8 @@ async def ScrubIDs(message, IDlist):
         return '' if m.group() in s else m.group()
     s = set(IDlist)
     result = re.sub(r'\w+', sub, message)
-    result = result.replace("@here", "!EVERYPING!")
-    result = result.replace("@everyone", "!HEREPING!")
+    result = result.replace("@here", "!MASSPING!")
+    result = result.replace("@everyone", "!MASSPING!")
     print(result)
     return result
 
