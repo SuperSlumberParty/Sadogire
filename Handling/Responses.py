@@ -34,7 +34,8 @@ async def GetResponse(SadoObj):
 async def WAYProcess(SadoObj, reply):
     if (type(SadoObj) == SadogireObjects.Request): # If object is a Request type
         reply[0] = "RCF" # Set an ReConFig reply type
-        reply[1] = await Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList) # Do your job
+        if (SadoObj.MessageType != 0): # Check for pings!
+            reply[1] = await Processing.ScrubIDs(SadoObj.Content, Lists.SilenceList) # Do your job
         return reply
     elif (type(SadoObj) == SadogireObjects.Reconfig):
         SadoObj.edit(await StarhookControl.GetStarhookID(Lists.StarhookList))
@@ -67,7 +68,7 @@ async def Process(SadoObj, reply):
     # Request response
     elif (type(SadoObj) == SadogireObjects.Request):
         reply[0] = "OK" # Assume ping
-        reply[1] = "Pong!"
+        reply[1] = None
         if (await StarhookControl.CheckNode(SadoObj.Identity, Lists.StarhookList) == False): # If object possesses an identity not known to Sadogire, send WAY
             reply[0] = "WAY"
         if (await StarhookRCF.CheckRQL(SadoObj.Identity)): # If RCF Task present - Override OK to RCF
