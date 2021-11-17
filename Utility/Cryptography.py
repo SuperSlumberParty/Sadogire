@@ -2,17 +2,14 @@
 # Encoding&Encrypting is called "Scramble", while Decrypting&Decoding is called "Unscramble"
 # The algorhithm uses HKDF for Derision, which uses SECRET from Variables.Config
 
-# Cryptography libraries
 import cryptography
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import _get_backend, default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-# Encoding
 import base64
-# Compression
 import pickle, zlib
-# Derision secret key
+
 from Variables.Config import SECRET
 
 

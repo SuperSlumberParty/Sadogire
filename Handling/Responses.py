@@ -60,7 +60,6 @@ async def Process(SadoObj, reply):
     # Reconfigures a Node
     elif (type(SadoObj) == SadogireObjects.Reconfig):
         vars = await StarhookRCF.GetRCFVars(SadoObj.Identity)
-        print(vars)
         SadoObj.edit(None, vars[0], vars[1], vars[2], vars[3])
         reply[0] = "WAY"
         reply[1] = SadoObj

@@ -84,7 +84,6 @@ async def ApproveUser(ctx, userid, level):
             await ActionLog(f"<@{userid}> has been approved with permission level {level}")
         else:
             await ctx.channel.send("This user is already on the approved list.")
-    print(Lists.ApprovedUsers)
 
 # Flips permissions of a user
 # This command *should* be only available to the owner

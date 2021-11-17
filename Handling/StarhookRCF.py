@@ -1,9 +1,6 @@
 # This file is responsible for managing Classes.SadogireObjects.Reconfig (RCF) objects and Lists.ReconfigQueueList (RQL) 
 # RQL contains tuples, each having an ID and a list containing 4 variables
-from discord.ext.commands.converter import RoleConverter
 from Variables.Lists import ReconfigQueueList
-
-import time
 
 # Checks if node has RCF tasks
 async def CheckRQL(id):
@@ -22,7 +19,6 @@ async def GetRCFVars(id):
 # Validates vars list from CreateRCFTask
 # Should be [int,int,bool,string], any member of the list can be NoneType aswell
 async def ValidateRCFTask(vars):
-    print(vars)
     if (len(vars) != 4):
         return False
     if (type(vars[0]) == int or vars[0] == None):
@@ -64,11 +60,9 @@ async def AddRCFTask(id, vars):
     if (await CheckRQL(id)):
         RCFlist = await GetRCFlist(id)
         RCFlist[1] = vars
-        print(ReconfigQueueList) #
         return True
     else:
         ReconfigQueueList.append([id, vars])
-        print(ReconfigQueueList) #
         return False
 
 # Remove a Reconfigure Task

@@ -21,8 +21,8 @@ async def Save(object, path):
 
 # Load lists from file
 async def Load(path):
-    #try:
+    try:
         with open(path, 'rb') as SadogireLists:
             return pickle.load(SadogireLists)
-    #except:
-       # print("Unable to load lists!")
+    except:
+       print("Unable to load lists!")
